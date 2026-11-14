@@ -1,0 +1,230 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/pinctrl/sstar,ssc338q-pinctrl.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q pin controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description: |
+  The PADTOP block of the SigmaStar SSC338Q (Infinity6E) has one register
+  per pad holding its GPIO state and configuration. The function muxes are
+  spread over PADTOP, CHIPTOP and the PM sleep block. The PM pads have the
+  same kind of registers in the PM GPIO block, the pads of the SAR ADC are
+  controlled in the SAR block.
+
+  The GPIO numbers are defined in include/dt-bindings/gpio/sstar,ssc338q-gpio.h.
+
+properties:
+  compatible:
+    const: sstar,ssc338q-pinctrl
+
+  reg:
+    items:
+      - description: PADTOP registers
+      - description: PM GPIO registers
+
+  gpio-controller: true
+
+  gpio-line-names:
+    maxItems: 107
+
+  "#gpio-cells":
+    const: 2
+
+  sstar,chiptop:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: The CHIPTOP system controller.
+
+  sstar,pmsleep:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: The PM sleep system controller.
+
+  sstar,sar:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: The SAR ADC, which holds the mode and GPIO state of its pads.
+
+patternProperties:
+  "-state$":
+    type: object
+    additionalProperties: false
+
+    patternProperties:
+      "-pins$":
+        type: object
+        $ref: /schemas/pinctrl/pincfg-node.yaml#
+        allOf:
+          - $ref: /schemas/pinctrl/pinmux-node.yaml#
+
+        properties:
+          groups:
+            items:
+              enum: [sd0, sd0_cdz, pm_spi, pm_led, i2c0, sar0, sar1, sar2,
+                     sar3, i2c1, uart1_gpio0, uart1_i2s0, uart1_eth_led,
+                     uart1_gpio4, uart1_fuart, uart1_gpio8, fuart, sr0_mipi,
+                     sr0_ctrl, sr0_pdn]
+
+          function:
+            enum: [gpio, sd0, sd0_cdz, pm_spi, eth_led, i2c0, adc, i2c1,
+                    uart1, fuart, sr0_mipi, sr0_ctrl, sr0_pdn]
+
+          pins:
+            items:
+              enum:
+                - GPIO0
+                - GPIO1
+                - GPIO2
+                - GPIO3
+                - GPIO4
+                - GPIO5
+                - GPIO6
+                - GPIO7
+                - GPIO8
+                - GPIO9
+                - GPIO10
+                - GPIO11
+                - GPIO12
+                - GPIO13
+                - GPIO14
+                - GPIO15
+                - SD0_GPIO0
+                - SD0_CDZ
+                - SD0_D1
+                - SD0_D0
+                - SD0_CLK
+                - SD0_CMD
+                - SD0_D3
+                - SD0_D2
+                - I2S0_MCLK
+                - I2S0_BCK
+                - I2S0_WCK
+                - I2S0_DI
+                - I2S0_DO
+                - I2C0_SCL
+                - I2C0_SDA
+                - ETH_LED0
+                - ETH_LED1
+                - FUART_RX
+                - FUART_TX
+                - FUART_CTS
+                - FUART_RTS
+                - SD1_CDZ
+                - SD1_D1
+                - SD1_D0
+                - SD1_CLK
+                - SD1_CMD
+                - SD1_D3
+                - SD1_D2
+                - SD1_GPIO0
+                - SD1_GPIO1
+                - SPI_CZ
+                - SPI_CK
+                - SPI_DI
+                - SPI_DO
+                - SPI_WPZ
+                - SPI_HLD
+                - SR0_IO00
+                - SR0_IO01
+                - SR0_IO02
+                - SR0_IO03
+                - SR0_IO04
+                - SR0_IO05
+                - SR0_IO06
+                - SR0_IO07
+                - SR0_IO08
+                - SR0_IO09
+                - SR0_IO10
+                - SR0_IO11
+                - SR0_IO12
+                - SR0_IO13
+                - SR0_IO14
+                - SR0_IO15
+                - SR0_IO16
+                - SR0_IO17
+                - SR0_IO18
+                - SR0_IO19
+                - SR1_IO00
+                - SR1_IO01
+                - SR1_IO02
+                - SR1_IO03
+                - SR1_IO04
+                - SR1_IO05
+                - SR1_IO06
+                - SR1_IO07
+                - SR1_IO08
+                - SR1_IO09
+                - SR1_IO10
+                - SR1_IO11
+                - SR1_IO12
+                - SR1_IO13
+                - SR1_IO14
+                - SR1_IO15
+                - SR1_IO16
+                - SR1_IO17
+                - SR1_IO18
+                - SR1_IO19
+                - PM_GPIO0
+                - PM_GPIO1
+                - PM_GPIO2
+                - PM_GPIO3
+                - PM_GPIO4
+                - PM_GPIO5
+                - PM_GPIO6
+                - PM_GPIO7
+                - PM_GPIO8
+                - PM_GPIO9
+                - PM_GPIO10
+                - SAR_GPIO0
+                - SAR_GPIO1
+                - SAR_GPIO2
+                - SAR_GPIO3
+
+          bias-disable: true
+          bias-pull-up: true
+          input-enable: true
+          output-low: true
+          output-high: true
+
+        additionalProperties: false
+
+required:
+  - compatible
+  - reg
+  - gpio-controller
+  - "#gpio-cells"
+  - sstar,chiptop
+  - sstar,pmsleep
+  - sstar,sar
+
+allOf:
+  - $ref: pinctrl.yaml#
+
+additionalProperties: false
+
+examples:
+  - |
+    pinctrl@207800 {
+        compatible = "sstar,ssc338q-pinctrl";
+        reg = <0x207800 0x200>, <0x7e00 0x100>;
+        gpio-controller;
+        #gpio-cells = <2>;
+        sstar,chiptop = <&chiptop>;
+        sstar,pmsleep = <&pmsleep>;
+        sstar,sar = <&sar>;
+
+        sd0-default-state {
+            sd0-pins {
+                groups = "sd0";
+                function = "sd0";
+            };
+
+            sd0-data-pins {
+                pins = "SD0_D0", "SD0_D1", "SD0_D2", "SD0_D3", "SD0_CMD";
+                bias-pull-up;
+                input-enable;
+            };
+        };
+    };
