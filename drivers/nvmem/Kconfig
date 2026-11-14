@@ -496,6 +496,18 @@ config NVMEM_SPRD_EFUSE
 	  This driver can also be built as a module. If so, the module
 	  will be called nvmem-sprd-efuse.
 
+config NVMEM_SSTAR_OTP
+	tristate "SigmaStar SSC338Q OTP support"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on HAS_IOMEM
+	help
+	  Read-only access to the one-time programmable memory of the
+	  SigmaStar SSC338Q (Infinity6E) SoC, which holds the chip ID and
+	  factory calibration data.
+
+	  This driver can also be built as a module. If so, the module
+	  will be called nvmem_sstar_otp.
+
 config NVMEM_STM32_BSEC_OPTEE_TA
 	def_bool NVMEM_STM32_ROMEM && OPTEE
 	help
