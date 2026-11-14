@@ -37,6 +37,12 @@ properties:
               - thingyjp,breadbee # thingy.jp BreadBee
           - const: mstar,infinity3
 
+      - description: infinity6e boards
+        items:
+          - enum:
+              - sstar,ssc38m-v2 # Generic SSC_38M_2.0 IP camera module
+          - const: mstar,infinity6e
+
       - description: mercury5 boards
         items:
           - enum:
