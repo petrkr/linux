@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/spi/sstar,ssc338q-fsp.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q FSP SPI flash controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  The FSP (flash serial peripheral) of the SigmaStar SSC338Q (Infinity6E)
+  SoC executes short SPI flash commands. The register region also covers
+  the QSPI block that follows it, which reads the flash for the BDMA
+  controller. The FSP can take the data it sends from the BDMA.
+
+allOf:
+  - $ref: spi-controller.yaml#
+
+properties:
+  compatible:
+    const: sstar,ssc338q-fsp
+
+  reg:
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+  dmas:
+    items:
+      - description: BDMA channel reading the flash through the QSPI block
+      - description: BDMA channel feeding the FSP write buffer
+
+  dma-names:
+    items:
+      - const: rx
+      - const: tx
+
+required:
+  - compatible
+  - reg
+  - clocks
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/sstar,ssc338q-clkgen.h>
+
+    spi@201a00 {
+        compatible = "sstar,ssc338q-fsp";
+        reg = <0x201a00 0x400>;
+        clocks = <&clkgen SSC338Q_CLKGEN_SPI_FLASH>;
+        dmas = <&bdma 0 5>, <&bdma 1 11>;
+        dma-names = "rx", "tx";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        flash@0 {
+            compatible = "spi-nand";
+            reg = <0>;
+        };
+    };
