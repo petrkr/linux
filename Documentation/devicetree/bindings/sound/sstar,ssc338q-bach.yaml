@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/sound/sstar,ssc338q-bach.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q audio controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  Audio block (BACH) of the SigmaStar SSC338Q (Infinity6E) SoC with its
+  analog front end (ATOP). BACH holds the digital audio path and a DMA
+  engine, ATOP the microphone amplifiers, the ADC and the DAC.
+
+properties:
+  compatible:
+    const: sstar,ssc338q-bach
+
+  reg:
+    items:
+      - description: BACH registers
+      - description: ATOP registers
+
+  reg-names:
+    items:
+      - const: bach
+      - const: atop
+
+  interrupts:
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+required:
+  - compatible
+  - reg
+  - reg-names
+  - interrupts
+  - clocks
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/sstar,ssc338q-clkgen.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    audio-controller@2a0400 {
+        compatible = "sstar,ssc338q-bach";
+        reg = <0x2a0400 0x600>, <0x206800 0x200>;
+        reg-names = "bach", "atop";
+        interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&clkgen SSC338Q_CLKGEN_BACH>;
+    };
