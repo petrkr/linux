@@ -390,6 +390,16 @@ config USB_OXU210HP_HCD
 	  To compile this driver as a module, choose M here: the
 	  module will be called oxu210hp-hcd.
 
+config USB_FUSBH200_HCD
+	tristate "Faraday FUSBH200 USB2.0 Host Controller"
+	depends on USB && HAS_DMA && (ARCH_MSTARV7 || COMPILE_TEST)
+	help
+	  Say Y here to enable support for the Faraday FUSBH200 EHCI-like
+	  USB 2.0 host controller found in the SigmaStar SSC338Q SoC.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called fusbh200-hcd.
+
 config USB_ISP116X_HCD
 	tristate "ISP116X HCD support"
 	depends on HAS_IOMEM
