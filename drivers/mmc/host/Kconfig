@@ -524,6 +524,17 @@ config MMC_MESON_MX_SDIO
 	  Amlogic Meson6, Meson8 and Meson8b SoCs.
 
 	  If you have a controller with this interface, say Y or M here.
+
+config MMC_SSTAR_FCIE
+	tristate "SigmaStar SSC338Q FCIE SD Host Controller support"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on COMMON_CLK
+	depends on HAS_DMA
+	help
+	  This selects support for the FCIE SD Host Controller on the
+	  SigmaStar SSC338Q (Infinity6E) SoC.
+
+	  If you have a controller with this interface, say Y or M here.
 	  If unsure, say N.
 
 config MMC_MOXART
