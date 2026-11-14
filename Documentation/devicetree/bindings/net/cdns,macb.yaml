@@ -63,6 +63,7 @@ properties:
           - mobileye,eyeq5-gem        # Mobileye EyeQ5 SoCs
           - raspberrypi,rp1-gem       # Raspberry Pi RP1 gigabit ethernet interface
           - sifive,fu540-c000-gem     # SiFive FU540-C000 SoC
+          - sstar,ssc338q-emac        # SigmaStar SSC338Q SoC
 
       - items:
           - enum:
@@ -83,6 +84,7 @@ properties:
     items:
       - description: Basic register set
       - description: GEMGXL Management block registers on SiFive FU540-C000 SoC
+          or internal PHY analog front end registers on SigmaStar SSC338Q SoC
 
   interrupts:
     minItems: 1
@@ -208,7 +210,9 @@ allOf:
         properties:
           compatible:
             contains:
-              const: sifive,fu540-c000-gem
+              enum:
+                - sifive,fu540-c000-gem
+                - sstar,ssc338q-emac
     then:
       properties:
         reg:
