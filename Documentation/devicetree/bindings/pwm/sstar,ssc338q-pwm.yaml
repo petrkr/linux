@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/pwm/sstar,ssc338q-pwm.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q PWM controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+allOf:
+  - $ref: pwm.yaml#
+
+properties:
+  compatible:
+    const: sstar,ssc338q-pwm
+
+  reg:
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+  "#pwm-cells":
+    const: 3
+
+required:
+  - compatible
+  - reg
+  - clocks
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/sstar,ssc338q-clkgen.h>
+
+    pwm@203200 {
+        compatible = "sstar,ssc338q-pwm";
+        reg = <0x203200 0x400>;
+        clocks = <&clkgen SSC338Q_CLKGEN_PWM>;
+        #pwm-cells = <3>;
+    };
