@@ -702,6 +702,17 @@ config PWM_SPRD
 	  To compile this driver as a module, choose M here: the module
 	  will be called pwm-sprd.
 
+config PWM_SSTAR
+	tristate "SigmaStar SSC338Q PWM support"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on HAS_IOMEM && COMMON_CLK
+	help
+	  Generic PWM framework driver for the PWM controller of the
+	  SigmaStar SSC338Q (Infinity6E) SoC.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called pwm-sstar.
+
 config PWM_STI
 	tristate "STiH4xx PWM support"
 	depends on ARCH_STI || COMPILE_TEST
