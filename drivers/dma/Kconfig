@@ -597,6 +597,19 @@ config SPRD_DMA
 	help
 	  Enable support for the on-chip DMA controller on Spreadtrum platform.
 
+config SSTAR_BDMA
+	tristate "SigmaStar SSC338Q BDMA support"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on HAS_IOMEM && COMMON_CLK
+	select DMA_ENGINE
+	select DMA_VIRTUAL_CHANNELS
+	help
+	  Enable support for the BDMA controller of the SigmaStar SSC338Q
+	  (Infinity6E) SoC, which copies and fills memory.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called sstar-bdma.
+
 config SWITCHTEC_DMA
 	tristate "Switchtec PSX/PFX Switch DMA Engine Support"
 	depends on PCI
