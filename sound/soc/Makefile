@@ -74,6 +74,7 @@ obj-$(CONFIG_SND_SOC)   += sophgo/
 obj-$(CONFIG_SND_SOC)	+= spacemit/
 obj-$(CONFIG_SND_SOC)	+= spear/
 obj-$(CONFIG_SND_SOC)	+= sprd/
+obj-$(CONFIG_SND_SOC)	+= sstar/
 obj-$(CONFIG_SND_SOC)	+= starfive/
 obj-$(CONFIG_SND_SOC)	+= sti/
 obj-$(CONFIG_SND_SOC)	+= stm/

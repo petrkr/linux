@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "SigmaStar"
+
+config SND_SOC_SSTAR_BACH
+	tristate "SigmaStar SSC338Q audio capture"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on HAS_IOMEM && COMMON_CLK
+	help
+	  Say Y or M to record from the analog microphone input of the
+	  SigmaStar SSC338Q (Infinity6E) SoC.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called snd-soc-sstar-bach.
+
+endmenu
