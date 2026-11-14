@@ -461,6 +461,20 @@ config HW_RANDOM_MESON
 
 	  If unsure, say Y.
 
+config HW_RANDOM_SSTAR
+	tristate "SigmaStar SSC338Q Random Number Generator support"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on HAS_IOMEM && OF
+	default HW_RANDOM if ARCH_MSTARV7
+	help
+	  This driver provides kernel-side support for the Random Number
+	  Generator hardware found on the SigmaStar SSC338Q (Infinity6E) SoC.
+
+	  To compile this driver as a module, choose M here. the
+	  module will be called sstar-rng.
+
+	  If unsure, say Y.
+
 config HW_RANDOM_CAVIUM
 	tristate "Cavium ThunderX Random Number Generator support"
 	depends on PCI
