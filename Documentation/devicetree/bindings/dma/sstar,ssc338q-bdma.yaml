@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/dma/sstar,ssc338q-bdma.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q BDMA controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  General purpose DMA controller (BDMA) of the SigmaStar SSC338Q
+  (Infinity6E) SoC. It has four channels, each with its own interrupt,
+  that copy or fill memory, optionally line by line with a line offset,
+  and move data between memory and some peripherals.
+
+allOf:
+  - $ref: dma-controller.yaml#
+
+properties:
+  compatible:
+    const: sstar,ssc338q-bdma
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    items:
+      - description: channel 0
+      - description: channel 1
+      - description: channel 2
+      - description: channel 3
+
+  clocks:
+    maxItems: 1
+
+  "#dma-cells":
+    const: 2
+    description: |
+      The first cell is the channel number. The second cell selects the
+      peripheral on the device side of the transfer, it is the value of the
+      source or destination selection of the controller, for example 5 for
+      the read path of the SPI flash controller and 11 for the write buffer
+      of its FSP.
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - clocks
+  - "#dma-cells"
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/sstar,ssc338q-clkgen.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    dma-controller@200400 {
+        compatible = "sstar,ssc338q-bdma";
+        reg = <0x200400 0x200>;
+        interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&clkgen SSC338Q_CLKGEN_BDMA>;
+        #dma-cells = <2>;
+    };
