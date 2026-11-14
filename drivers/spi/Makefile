@@ -150,6 +150,7 @@ obj-$(CONFIG_SPI_SG2044_NOR)	+= spi-sg2044-nor.o
 obj-$(CONFIG_SPI_SPACEMIT_K1)		+= spi-spacemit-k1.o
 obj-$(CONFIG_SPI_SPRD)			+= spi-sprd.o
 obj-$(CONFIG_SPI_SPRD_ADI)		+= spi-sprd-adi.o
+obj-$(CONFIG_SPI_SSTAR_FSP)		+= spi-sstar-fsp.o
 obj-$(CONFIG_SPI_STM32) 		+= spi-stm32.o
 obj-$(CONFIG_SPI_STM32_OSPI) 		+= spi-stm32-ospi.o
 obj-$(CONFIG_SPI_STM32_QSPI) 		+= spi-stm32-qspi.o
