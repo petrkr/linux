@@ -6,6 +6,7 @@
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#include <linux/bitfield.h>
 #include <linux/circ_buf.h>
 #include <linux/clk-provider.h>
 #include <linux/clk.h>
@@ -245,6 +246,25 @@ static u32 hw_readl(struct macb *bp, int offset)
 static void hw_writel(struct macb *bp, int offset, u32 value)
 {
 	writel_relaxed(value, bp->regs + offset);
+}
+
+/* The SigmaStar EMAC sits behind a 16-bit register bus with a 4-byte stride,
+ * so each 32-bit register is split into two halves.
+ *
+ * The SigmaStar register information comes from the SigmaStar Linux 4.9 BSP
+ * maintained by OpenIPC (https://github.com/OpenIPC/linux, branch
+ * sigmastar-infinity6e).
+ */
+static u32 hw_readl_sstar(struct macb *bp, int offset)
+{
+	return (readl_relaxed(bp->regs + offset * 2) & 0xffff) |
+	       (readl_relaxed(bp->regs + offset * 2 + 4) & 0xffff) << 16;
+}
+
+static void hw_writel_sstar(struct macb *bp, int offset, u32 value)
+{
+	writel_relaxed(value & 0xffff, bp->regs + offset * 2);
+	writel_relaxed(value >> 16, bp->regs + offset * 2 + 4);
 }
 
 /* Find the CPU endianness by using the loopback bit of NCR register. When the
@@ -5466,6 +5486,13 @@ static int at91ether_start(struct macb *bp)
 	/* Reset buffer index */
 	rxq->tail = 0;
 
+	if (bp->caps & MACB_CAPS_SSTAR_EMAC) {
+		/* Buffer area base, size select as used by the vendor driver */
+		macb_writel(bp, SSTAR_RBCFG, lower_32_bits(rxq->buffers_dma) | 1);
+		macb_writel(bp, SSTAR_RBRP, 0);
+		macb_writel(bp, SSTAR_RBWP, 0);
+	}
+
 	/* Program address of descriptor list in Rx Buffer Queue register */
 	macb_writel(bp, RBQP, rxq->ring_dma);
 
@@ -5600,6 +5627,13 @@ static netdev_tx_t at91ether_start_xmit(struct sk_buff *skb,
 			return NETDEV_TX_OK;
 		}
 
+		if (bp->caps & MACB_CAPS_SSTAR_EMAC) {
+			/* The barrier also flushes the memory controller
+			 * write pipe, so the DMA sees the frame.
+			 */
+			wmb();
+		}
+
 		/* Set address of the data in the Transmit Address register */
 		macb_writel(bp, TAR, bp->rm9200_txq[desc].mapping);
 		/* Set length of the packet in the Transmit Control register */
@@ -5648,6 +5682,11 @@ static void at91ether_rx(struct net_device *netdev)
 
 		/* reset ownership bit */
 		desc->addr &= ~MACB_BIT(RX_USED);
+
+		/* release the buffer space to the hardware */
+		if (bp->caps & MACB_CAPS_SSTAR_EMAC)
+			macb_writel(bp, SSTAR_RBRP,
+				    macb_readl(bp, SSTAR_RBRP) + ALIGN(pktlen, 4));
 
 		/* wrap after last buffer */
 		if (rxq->tail == AT91ETHER_MAX_RX_DESCR - 1)
@@ -5780,6 +5819,103 @@ static int at91ether_init(struct platform_device *pdev)
 	macb_writel(bp, NCR, 0);
 
 	macb_writel(bp, NCFGR, MACB_BF(CLK, MACB_CLK_DIV32) | MACB_BIT(BIG));
+
+	return 0;
+}
+
+/* The internal PHY analog front end has three banks of 8-bit registers on
+ * the 16-bit RIU, each register address maps to a byte of a 16-bit word.
+ */
+#define SSTAR_EPHY_REG(bank, reg)	((bank) * 0x200 + ((reg) << 1) - ((reg) & 1))
+
+struct sstar_ephy_init {
+	u16 offset;
+	u8 val;
+};
+
+#define SSTAR_EPHY(bank, reg, val)	{ SSTAR_EPHY_REG(bank, reg), val }
+
+/* Analog front end setup from the vendor driver, the order matters */
+static const struct sstar_ephy_init sstar_ephy_init_seq[] = {
+	SSTAR_EPHY(1, 0xb4, 0x02), SSTAR_EPHY(1, 0x4f, 0x02),
+	SSTAR_EPHY(1, 0x51, 0x01), SSTAR_EPHY(1, 0x77, 0x18),
+	SSTAR_EPHY(0, 0x72, 0xa0), SSTAR_EPHY(1, 0xfc, 0x00),
+	SSTAR_EPHY(1, 0xfd, 0x00), SSTAR_EPHY(2, 0xa1, 0x80),
+	SSTAR_EPHY(1, 0xcc, 0x40), SSTAR_EPHY(1, 0xbb, 0x04),
+	SSTAR_EPHY(2, 0x3a, 0x00), SSTAR_EPHY(2, 0xf1, 0x00),
+	SSTAR_EPHY(2, 0x8a, 0x01), SSTAR_EPHY(1, 0x3b, 0x01),
+	SSTAR_EPHY(1, 0xc4, 0x44), SSTAR_EPHY(2, 0x80, 0x30),
+	SSTAR_EPHY(2, 0xc5, 0x00), SSTAR_EPHY(2, 0x30, 0x43),
+	SSTAR_EPHY(2, 0x39, 0x41), SSTAR_EPHY(2, 0xf2, 0xf5),
+	SSTAR_EPHY(2, 0xf3, 0x0d), SSTAR_EPHY(0, 0x79, 0xd0),
+	SSTAR_EPHY(0, 0x77, 0x5a), SSTAR_EPHY(0, 0x2d, 0x7c),
+	SSTAR_EPHY(2, 0xe8, 0x06), SSTAR_EPHY(0, 0x2b, 0x00),
+	SSTAR_EPHY(2, 0xe8, 0x00), SSTAR_EPHY(0, 0x2b, 0x00),
+	SSTAR_EPHY(2, 0xe8, 0x06), SSTAR_EPHY(0, 0xaa, 0x1c),
+	SSTAR_EPHY(0, 0xac, 0x1c), SSTAR_EPHY(0, 0xad, 0x1c),
+	SSTAR_EPHY(0, 0xae, 0x1c), SSTAR_EPHY(0, 0xaf, 0x1c),
+	SSTAR_EPHY(2, 0xe8, 0x00), SSTAR_EPHY(0, 0xaa, 0x1c),
+	SSTAR_EPHY(0, 0xab, 0x28), SSTAR_EPHY(1, 0xf5, 0x02),
+	SSTAR_EPHY(1, 0x0f, 0xc9), SSTAR_EPHY(1, 0x89, 0x50),
+	SSTAR_EPHY(1, 0x8b, 0x80), SSTAR_EPHY(1, 0x8e, 0x0e),
+	SSTAR_EPHY(1, 0x90, 0x04), SSTAR_EPHY(1, 0xc7, 0x80),
+	SSTAR_EPHY(1, 0x10, 0x53),
+};
+
+static int sstar_ephy_init(struct platform_device *pdev)
+{
+	void __iomem *base;
+	unsigned int i;
+
+	base = devm_platform_ioremap_resource(pdev, 1);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
+
+	for (i = 0; i < ARRAY_SIZE(sstar_ephy_init_seq); i++) {
+		const struct sstar_ephy_init *init = &sstar_ephy_init_seq[i];
+		u8 val = init->val;
+
+		/* The low nibble of this register has to be preserved */
+		if (init->offset == SSTAR_EPHY_REG(2, 0x80))
+			val |= readb(base + init->offset) & 0x0f;
+
+		writeb(val, base + init->offset);
+	}
+
+	return 0;
+}
+
+static int sstar_emac_init(struct platform_device *pdev)
+{
+	struct net_device *netdev = platform_get_drvdata(pdev);
+	struct macb *bp = netdev_priv(netdev);
+	u32 val;
+	int err;
+
+	err = at91ether_init(pdev);
+	if (err)
+		return err;
+
+	err = sstar_ephy_init(pdev);
+	if (err)
+		return err;
+
+	/* Values from the vendor driver, the meaning of the bits is unknown.
+	 * CFG0 selects the internal PHY and CFG1 enables the RX descriptors.
+	 */
+	macb_writel(bp, SSTAR_CFG0, 0x0008f011);
+	macb_writel(bp, SSTAR_CFG1, BIT(0));
+
+	val = macb_readl(bp, SSTAR_CFG2);
+	val &= ~(GENMASK(25, 18) | GENMASK(29, 28));
+	val |= FIELD_PREP(GENMASK(23, 20), 4) | FIELD_PREP(GENMASK(25, 24), 2) |
+	       BIT(18) | BIT(28) | BIT(29);
+	macb_writel(bp, SSTAR_CFG2, val);
+
+	val = macb_readl(bp, SSTAR_CFG3);
+	val &= ~GENMASK(31, 16);
+	val |= BIT(24) | BIT(8) | BIT(0);
+	macb_writel(bp, SSTAR_CFG3, val);
 
 	return 0;
 }
@@ -6101,6 +6237,12 @@ static const struct macb_config emac_config = {
 	.usrio = &at91_default_usrio,
 };
 
+static const struct macb_config sstar_emac_config = {
+	.caps = MACB_CAPS_NEEDS_RSTONUBR | MACB_CAPS_MACB_IS_EMAC |
+		MACB_CAPS_USRIO_DISABLED | MACB_CAPS_SSTAR_EMAC,
+	.init = sstar_emac_init,
+};
+
 static const struct macb_config np4_config = {
 	.caps = MACB_CAPS_USRIO_DISABLED,
 };
@@ -6210,6 +6352,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "atmel,sama5d4-gem", .data = &sama5d4_config },
 	{ .compatible = "cdns,at91rm9200-emac", .data = &emac_config },
 	{ .compatible = "cdns,emac", .data = &emac_config },
+	{ .compatible = "sstar,ssc338q-emac", .data = &sstar_emac_config },
 	{ .compatible = "cdns,zynqmp-gem", .data = &zynqmp_config}, /* deprecated */
 	{ .compatible = "cdns,zynq-gem", .data = &zynq_config }, /* deprecated */
 	{ .compatible = "sifive,fu540-c000-gem", .data = &fu540_c000_config },
@@ -6295,7 +6438,10 @@ static int macb_probe(struct platform_device *pdev)
 	bp->native_io = native_io;
 	for (q = 0; q < MACB_MAX_QUEUES; q++)
 		bp->info.queue_stats[q] = &bp->queues[q].stats;
-	if (native_io) {
+	if (macb_config->caps & MACB_CAPS_SSTAR_EMAC) {
+		bp->macb_reg_readl = hw_readl_sstar;
+		bp->macb_reg_writel = hw_writel_sstar;
+	} else if (native_io) {
 		bp->macb_reg_readl = hw_readl_native;
 		bp->macb_reg_writel = hw_writel_native;
 	} else {

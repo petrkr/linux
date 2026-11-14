@@ -74,6 +74,17 @@
 #define MACB_TBQPH		0x04C8
 #define MACB_RBQPH		0x04D4
 
+/* SigmaStar EMAC register offsets. The meaning of the registers above 0x100
+ * is unknown, the values programmed into them come from the vendor driver.
+ */
+#define MACB_SSTAR_RBCFG	0x001c /* RX Buffer Configuration */
+#define MACB_SSTAR_RBRP		0x0038 /* RX Buffer Read Pointer */
+#define MACB_SSTAR_RBWP		0x003c /* RX Buffer Write Pointer */
+#define MACB_SSTAR_CFG0		0x0100
+#define MACB_SSTAR_CFG1		0x0104
+#define MACB_SSTAR_CFG2		0x0134
+#define MACB_SSTAR_CFG3		0x0138
+
 /* GEM register offsets. */
 #define GEM_NCR			0x0000 /* Network Control */
 #define GEM_NCFGR		0x0004 /* Network Config */
@@ -785,6 +796,7 @@
 #define MACB_CAPS_USRIO_HAS_MII			BIT(26)
 #define MACB_CAPS_USRIO_HAS_REFCLK_SOURCE	BIT(27)
 #define MACB_CAPS_USRIO_HAS_TSUCLK_SOURCE	BIT(28)
+#define MACB_CAPS_SSTAR_EMAC			BIT(29)
 
 /* LSO settings */
 #define MACB_LSO_UFO_ENABLE			0x01
