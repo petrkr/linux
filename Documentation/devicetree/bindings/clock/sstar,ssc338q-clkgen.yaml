@@ -1,0 +1,128 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/clock/sstar,ssc338q-clkgen.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q clock generator
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description: |
+  The clock generator (CLKGEN) of the SigmaStar SSC338Q (Infinity6E) selects
+  the parent clock of each peripheral from the MPLL outputs, the USB PLL
+  and UTMI PLL outputs or the crystal and gates it. A few more peripheral clocks, such as the Ethernet MAC RX
+  and TX clocks, are gated in the SC_GP control block.
+
+  See include/dt-bindings/clock/sstar,ssc338q-clkgen.h for the clock IDs.
+
+properties:
+  compatible:
+    enum:
+      - sstar,ssc338q-clkgen
+      - sstar,ssc338q-scgp
+
+  reg:
+    maxItems: 1
+
+  "#clock-cells":
+    const: 1
+
+  clocks:
+    items:
+      - description: MPLL output divided by 5
+      - description: MPLL output divided by 6
+      - description: MPLL output divided by 7
+      - description: MPLL output divided by 10
+      - description: Crystal divided by 2
+      - description: MPLL output divided by 2
+      - description: MPLL output divided by 3
+      - description: MPLL output divided by 4
+      - description: Crystal
+      - description: USB PLL 384 MHz output
+      - description: USB PLL 320 MHz output
+      - description: UTMI PLL 480 MHz output
+      - description: UTMI PLL 240 MHz output
+      - description: UTMI PLL 192 MHz output
+      - description: UTMI PLL 160 MHz output
+      - description: MPLL output multiplied by 2/5
+
+  clock-names:
+    items:
+      - const: mpll-div5
+      - const: mpll-div6
+      - const: mpll-div7
+      - const: mpll-div10
+      - const: xtal-div2
+      - const: mpll-div2
+      - const: mpll-div3
+      - const: mpll-div4
+      - const: xtal
+      - const: upll-384m
+      - const: upll-320m
+      - const: utmi-480m
+      - const: utmi-240m
+      - const: utmi-192m
+      - const: utmi-160m
+      - const: mpll-345m
+
+required:
+  - compatible
+  - reg
+  - "#clock-cells"
+
+allOf:
+  - if:
+      properties:
+        compatible:
+          const: sstar,ssc338q-clkgen
+    then:
+      required:
+        - clocks
+        - clock-names
+    else:
+      properties:
+        clocks: false
+        clock-names: false
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/mstar-msc313-mpll.h>
+
+    clock-controller@207000 {
+        compatible = "sstar,ssc338q-clkgen";
+        reg = <0x207000 0x200>;
+        #clock-cells = <1>;
+        clocks = <&mpll MSTAR_MSC313_MPLL_DIV5>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV6>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV7>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV10>,
+                 <&xtal_div2>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV2>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV3>,
+                 <&mpll MSTAR_MSC313_MPLL_DIV4>,
+                 <&xtal>,
+                 <&upll_384m>,
+                 <&upll_320m>,
+                 <&utmi_480m>,
+                 <&utmi_240m>,
+                 <&utmi_192m>,
+                 <&utmi_160m>,
+                 <&mpll_345m>;
+        clock-names = "mpll-div5", "mpll-div6", "mpll-div7",
+                      "mpll-div10", "xtal-div2", "mpll-div2",
+                      "mpll-div3", "mpll-div4", "xtal",
+                      "upll-384m", "upll-320m", "utmi-480m",
+                      "utmi-240m", "utmi-192m", "utmi-160m",
+                      "mpll-345m";
+    };
+
+  - |
+    clock-controller@226600 {
+        compatible = "sstar,ssc338q-scgp";
+        reg = <0x226600 0x200>;
+        #clock-cells = <1>;
+    };
