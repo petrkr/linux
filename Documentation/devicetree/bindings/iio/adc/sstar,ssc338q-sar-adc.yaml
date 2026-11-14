@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/iio/adc/sstar,ssc338q-sar-adc.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q SAR ADC
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  The 10-bit SAR ADC with four inputs in the PM domain of the SigmaStar
+  SSC338Q (Infinity6E) SoC. Its clock comes from the PM sleep block and is
+  enabled at reset. The block also holds the mode and GPIO state of the
+  input pads, which the pin controller accesses as a system controller.
+
+  The ADC also measures the on-chip temperature sensor, which is powered
+  from the PM sleep block and calibrated with a value from the OTP.
+
+properties:
+  compatible:
+    items:
+      - const: sstar,ssc338q-sar-adc
+      - const: syscon
+
+  reg:
+    maxItems: 1
+
+  "#io-channel-cells":
+    const: 1
+    description:
+      Channels 0 to 3 are the inputs, channel 4 is the temperature sensor.
+
+  nvmem-cells:
+    items:
+      - description: Temperature sensor reading at 27 degrees Celsius
+
+  nvmem-cell-names:
+    items:
+      - const: ts-calib
+
+  sstar,pmsleep:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: PM sleep block with the power control of the temperature
+      sensor
+
+dependencies:
+  sstar,pmsleep: [ nvmem-cells ]
+  nvmem-cells: [ sstar,pmsleep ]
+
+required:
+  - compatible
+  - reg
+
+additionalProperties: false
+
+examples:
+  - |
+    adc@2800 {
+        compatible = "sstar,ssc338q-sar-adc", "syscon";
+        reg = <0x2800 0x200>;
+        #io-channel-cells = <1>;
+        nvmem-cells = <&otp_ts_calib>;
+        nvmem-cell-names = "ts-calib";
+        sstar,pmsleep = <&pmsleep>;
+    };
