@@ -3697,6 +3697,41 @@ S:	Maintained
 F:	Documentation/devicetree/bindings/media/samsung,s5p-mfc.yaml
 F:	drivers/media/platform/samsung/s5p-mfc/
 
+ARM/SIGMASTAR SSC338Q SOC SUPPORT
+M:	Petr Kracík <petrkr@petrkr.net>
+L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+S:	Maintained
+F:	Documentation/devicetree/bindings/clock/sstar,ssc338q-clkgen.yaml
+F:	Documentation/devicetree/bindings/dma/sstar,ssc338q-bdma.yaml
+F:	Documentation/devicetree/bindings/i2c/sstar,ssc338q-i2c.yaml
+F:	Documentation/devicetree/bindings/iio/adc/sstar,ssc338q-sar-adc.yaml
+F:	Documentation/devicetree/bindings/mmc/sstar,ssc338q-fcie.yaml
+F:	Documentation/devicetree/bindings/nvmem/sstar,ssc338q-otp.yaml
+F:	Documentation/devicetree/bindings/phy/sstar,ssc338q-usb2-phy.yaml
+F:	Documentation/devicetree/bindings/pinctrl/sstar,ssc338q-pinctrl.yaml
+F:	Documentation/devicetree/bindings/pwm/sstar,ssc338q-pwm.yaml
+F:	Documentation/devicetree/bindings/rng/sstar,ssc338q-rng.yaml
+F:	Documentation/devicetree/bindings/sound/sstar,ssc338q-bach.yaml
+F:	Documentation/devicetree/bindings/spi/sstar,ssc338q-fsp.yaml
+F:	Documentation/devicetree/bindings/usb/sstar,ssc338q-ehci.yaml
+F:	arch/arm/boot/dts/sigmastar/mstar-infinity6e*
+F:	drivers/char/hw_random/sstar-rng.c
+F:	drivers/clk/mstar/clk-ssc338q-clkgen.c
+F:	drivers/dma/sstar-bdma.c
+F:	drivers/i2c/busses/i2c-sstar.c
+F:	drivers/iio/adc/sstar-sar-adc.c
+F:	drivers/mmc/host/sstar-fcie.c
+F:	drivers/net/phy/sstar-ephy.c
+F:	drivers/nvmem/sstar-otp.c
+F:	drivers/phy/phy-sstar-usb2.c
+F:	drivers/pinctrl/pinctrl-ssc338q.c
+F:	drivers/pwm/pwm-sstar.c
+F:	drivers/spi/spi-sstar-fsp.c
+F:	drivers/usb/host/fusbh200-hcd.*
+F:	include/dt-bindings/clock/sstar,ssc338q-clkgen.h
+F:	include/dt-bindings/gpio/sstar,ssc338q-gpio.h
+F:	sound/soc/sstar/
+
 ARM/SOCFPGA ARCHITECTURE
 M:	Dinh Nguyen <dinguyen@kernel.org>
 S:	Maintained
