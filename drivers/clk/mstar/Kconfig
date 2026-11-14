@@ -14,3 +14,13 @@ config MSTAR_MSC313_MPLL
 	help
 	  Support for the MPLL PLL and dividers block present on
 	  MStar/Sigmastar SoCs.
+
+config SSTAR_SSC338Q_CLKGEN
+	bool "SigmaStar SSC338Q clock generator driver"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	default ARCH_MSTARV7
+	help
+	  Support for the clock generator of the SigmaStar SSC338Q
+	  (Infinity6E) SoC. It selects the parent of the peripheral
+	  clocks from the MPLL outputs or the crystal and gates them,
+	  together with the Ethernet MAC clock gates of the SC_GP block.
