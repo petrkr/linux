@@ -572,6 +572,20 @@ config PINCTRL_SINGLE
 	help
 	  This selects the device tree based generic pinctrl driver.
 
+config PINCTRL_SSC338Q
+	bool "SigmaStar SSC338Q pin controller"
+	depends on ARCH_MSTARV7 || COMPILE_TEST
+	depends on OF
+	select GENERIC_PINCONF
+	select GPIOLIB
+	select MFD_SYSCON
+	select PINMUX
+	help
+	  Support for the pin controller and GPIO of the SigmaStar SSC338Q
+	  (Infinity6E) SoC. It handles the pad configuration, the GPIO
+	  lines and the function muxes of the SD card, SPI flash and
+	  Ethernet LED pads.
+
 config PINCTRL_ST
 	bool
 	depends on OF
