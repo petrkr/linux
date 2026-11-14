@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/usb/sstar,ssc338q-ehci.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q USB 2.0 host controller
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  Faraday FUSBH200 EHCI-like host controller with an integrated
+  transaction translator. Each 32-bit register is accessed as two 16-bit
+  halves on the RIU bus. A second register block configures the
+  controller and its connection to the PHY.
+
+allOf:
+  - $ref: usb-hcd.yaml#
+
+properties:
+  compatible:
+    const: sstar,ssc338q-ehci
+
+  reg:
+    items:
+      - description: Host controller registers
+      - description: USB controller configuration registers
+
+  reg-names:
+    items:
+      - const: uhc
+      - const: usbc
+
+  interrupts:
+    maxItems: 1
+
+  phys:
+    maxItems: 1
+
+  phy-names:
+    const: usb
+
+  vbus-supply:
+    description: Regulator for the VBUS of the port
+
+required:
+  - compatible
+  - reg
+  - reg-names
+  - interrupts
+  - phys
+  - phy-names
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    usb@284800 {
+        compatible = "sstar,ssc338q-ehci";
+        reg = <0x284800 0x200>, <0x284600 0x200>;
+        reg-names = "uhc", "usbc";
+        interrupts-extended = <&intc_irq GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+        phys = <&usb_phy>;
+        phy-names = "usb";
+    };
