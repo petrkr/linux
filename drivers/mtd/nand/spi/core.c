@@ -275,6 +275,38 @@ static int spinand_init_cfg_cache(struct spinand_device *spinand)
 	if (!spinand->cfg_cache)
 		return -ENOMEM;
 
+	spinand->boot_cfg = devm_kcalloc(dev,
+					 nand->memorg.ntargets,
+					 sizeof(*spinand->boot_cfg),
+					 GFP_KERNEL);
+	if (!spinand->boot_cfg)
+		return -ENOMEM;
+
+	return 0;
+}
+
+/*
+ * Save the configuration the bootloader left, so that it can be restored on
+ * shutdown for boot ROMs that expect it, for example with the on-die ECC
+ * enabled.
+ */
+static int spinand_read_boot_cfg(struct spinand_device *spinand)
+{
+	struct nand_device *nand = spinand_to_nand(spinand);
+	unsigned int target;
+	int ret;
+
+	for (target = 0; target < nand->memorg.ntargets; target++) {
+		ret = spinand_select_target(spinand, target);
+		if (ret)
+			return ret;
+
+		ret = spinand_read_reg_op(spinand, REG_CFG,
+					  &spinand->boot_cfg[target]);
+		if (ret)
+			return ret;
+	}
+
 	return 0;
 }
 
@@ -1955,6 +1987,10 @@ static int spinand_init(struct spinand_device *spinand)
 	if (ret)
 		goto err_free_bufs;
 
+	ret = spinand_read_boot_cfg(spinand);
+	if (ret)
+		goto err_free_bufs;
+
 	ret = spinand_init_flash(spinand);
 	if (ret)
 		goto err_free_bufs;
@@ -2102,6 +2138,24 @@ static int spinand_remove(struct spi_mem *mem)
 	return 0;
 }
 
+static void spinand_shutdown(struct spi_mem *mem)
+{
+	struct spinand_device *spinand = spi_mem_get_drvdata(mem);
+	struct nand_device *nand = spinand_to_nand(spinand);
+	unsigned int target;
+
+	mutex_lock(&spinand->lock);
+
+	for (target = 0; target < nand->memorg.ntargets; target++) {
+		if (spinand_select_target(spinand, target))
+			continue;
+
+		spinand_set_cfg(spinand, spinand->boot_cfg[target]);
+	}
+
+	mutex_unlock(&spinand->lock);
+}
+
 static const struct spi_device_id spinand_ids[] = {
 	{ .name = "spi-nand" },
 	{ /* sentinel */ },
@@ -2126,6 +2180,7 @@ static struct spi_mem_driver spinand_drv = {
 	},
 	.probe = spinand_probe,
 	.remove = spinand_remove,
+	.shutdown = spinand_shutdown,
 };
 module_spi_mem_driver(spinand_drv);
 

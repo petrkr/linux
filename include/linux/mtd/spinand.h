@@ -760,6 +760,7 @@ struct spinand_mem_ops {
  * @cur_target: currently selected target/die
  * @eccinfo: on-die ECC information
  * @cfg_cache: config register cache. One entry per die
+ * @boot_cfg: config register as left by the bootloader. One entry per die
  * @databuf: bounce buffer for data
  * @oobbuf: bounce buffer for OOB data
  * @scratchbuf: buffer used for everything but page accesses. This is needed
@@ -802,6 +803,7 @@ struct spinand_device {
 	struct spinand_ecc_info eccinfo;
 
 	u8 *cfg_cache;
+	u8 *boot_cfg;
 	u8 *databuf;
 	u8 *oobbuf;
 	u8 *scratchbuf;
