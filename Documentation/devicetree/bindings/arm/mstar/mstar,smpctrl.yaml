@@ -20,6 +20,7 @@ properties:
   compatible:
     items:
       - enum:
+          - sstar,ssc338q-smpctrl # SSC338Q
           - sstar,ssd201-smpctrl # SSD201/SSD202D
       - const: mstar,smpctrl
 
