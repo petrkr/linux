@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/nvmem/sstar,ssc338q-otp.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: SigmaStar SSC338Q OTP
+
+maintainers:
+  - Petr Kracik <petrkr@petrkr.net>
+
+description:
+  One-time programmable memory of the SigmaStar SSC338Q (Infinity6E) SoC.
+  The fuse words are mirrored in a bank of 16-bit registers, one word per
+  32-bit register. They hold the chip ID and factory calibration data.
+
+allOf:
+  - $ref: nvmem.yaml#
+
+properties:
+  compatible:
+    const: sstar,ssc338q-otp
+
+  reg:
+    maxItems: 1
+
+required:
+  - compatible
+  - reg
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    efuse@203000 {
+        compatible = "sstar,ssc338q-otp";
+        reg = <0x203000 0x200>;
+
+        nvmem-layout {
+            compatible = "fixed-layout";
+            #address-cells = <1>;
+            #size-cells = <1>;
+
+            chip-id@a8 {
+                reg = <0xa8 0x6>;
+            };
+        };
+    };
